@@ -1917,7 +1917,28 @@ def cleanup_on_exit():
                 logger.info(f"Terminated script: {script_key}")
         except Exception as e:
             logger.error(f"Error terminating script {script_key}: {e}")
-
+            
+def start_bot():
+    """Start the Telegram bot in a separate thread"""
+    logger.info("🤖 Starting Telegram Bot...")
+    try:
+        # Test bot connection
+        bot_info = bot.get_me()
+        logger.info(f"✅ Bot connected: @{bot_info.username}")
+        print(f"✅ Bot connected: @{bot_info.username}")
+        
+        # Start polling
+        bot.infinity_polling(
+            timeout=10, 
+            long_polling_timeout=5, 
+            none_stop=True, 
+            interval=0,
+            restart_on_change=True
+        )
+    except Exception as e:
+        logger.error(f"❌ Bot failed to start: {e}")
+        print(f"❌ Bot error: {e}")
+        
 if __name__ == "__main__":
     # Register cleanup function
     atexit.register(cleanup_on_exit)
