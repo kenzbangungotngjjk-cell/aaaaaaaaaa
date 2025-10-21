@@ -101,7 +101,7 @@ def keep_alive():
     t.daemon = True
     t.start()
     print("🌐 Flask Keep-Alive server started.")
-
+    
 # --- Configuration ---
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '7880112508:AAE6Sfr0rc7of4aO3ojTP4C70hCL_46y_90')
 OWNER_ID = int(os.getenv('OWNER_ID', '7520259263'))
@@ -1940,8 +1940,21 @@ if __name__ == "__main__":
         logger.info(f"Bot connected successfully: @{bot_info.username}")
         print(f"Bot connected successfully: @{bot_info.username}")
         
-        # Start polling with error handling
-        bot.infinity_polling(timeout=10, long_polling_timeout=5, none_stop=True, interval=0)
+        # Start bot polling in a separate thread
+        import threading
+        bot_thread = threading.Thread(target=bot.infinity_polling, kwargs={
+            'timeout': 10, 
+            'long_polling_timeout': 5, 
+            'none_stop': True, 
+            'interval': 0
+        })
+        bot_thread.daemon = True
+        bot_thread.start()
+        
+        # Run Flask app in main thread (for Render)
+        port = int(os.environ.get("PORT", 5000))
+        app.run(host='0.0.0.0', port=port, debug=False)
+        
     except Exception as e:
         logger.error(f"Bot error: {e}")
         print(f"Bot connection failed: {e}")
